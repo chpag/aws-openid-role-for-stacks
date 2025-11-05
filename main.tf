@@ -25,7 +25,7 @@ resource "aws_iam_role" "stacks" {
         "Action" : "sts:AssumeRoleWithWebIdentity",
         "Effect" : "Allow",
         "Principal" : {
-          "Federated" = aws_iam_openid_connect_provider.stacks.arn,
+          "Federated" = data.aws_iam_openid_connect_provider.stacks.arn,
         },
         "Condition" : {
           "StringEquals" : {
