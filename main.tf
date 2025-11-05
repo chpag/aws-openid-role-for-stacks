@@ -3,13 +3,16 @@ locals {
   jwt_audience               = "terraform-stacks-private-preview"
 }
 
-# Terraform Cloud production OpenID provider.
-resource "aws_iam_openid_connect_provider" "stacks" {
+data "aws_iam_openid_connect_provider" "stacks" {
   url = "https://app.terraform.io"
-
-  client_id_list  = [local.jwt_audience]
-  thumbprint_list = ["9E99A48A9960B14926BB7F3B02E22DA2B0AB7280"]
 }
+# Terraform Cloud production OpenID provider.
+#resource "aws_iam_openid_connect_provider" "stacks" {
+#  url = "https://app.terraform.io"
+
+#  client_id_list  = [local.jwt_audience]
+#  thumbprint_list = ["9E99A48A9960B14926BB7F3B02E22DA2B0AB7280"]
+#}
 
 # This role is assumed by Terraform Cloud dynamic credentials, accepting any
 # stack that matches the subject string in local.development_stack_subjects.
