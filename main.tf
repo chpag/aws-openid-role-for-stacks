@@ -74,5 +74,20 @@ resource "aws_iam_role_policy" "stacks" {
 
 # Emit the role ARN, for use in the stack configuration.
 output "role_arn" {
-  value = aws_iam_role.stacks.arn
+  description = "ARN of the IAM role for Terraform Stacks"
+  value       = aws_iam_role.stacks.arn
 }
+
+output "openid_provider_arn" {
+  description = "ARN of the OpenID Connect provider"
+  value       = aws_iam_openid_connect_provider.stacks.arn
+}
+
+output "supported_audiences" {
+  description = "List of supported JWT audiences"
+  value       = local.jwt_audiences
+}
+
+output "supported_organizations" {
+  description = "List of organization subjects that can assume this role"
+  value       = local.organization_subjects
