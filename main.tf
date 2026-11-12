@@ -1,6 +1,14 @@
 locals {
-  development_stack_subjects = [for org in var.organization_names : "organization:${org}:*"]
-  jwt_audience               = "terraform-stacks-private-preview"
+  jwt_audiences = [
+    "aws.workload.identity",
+    "terraform-stacks-private-preview",
+    "platform.onboarding",
+    "engineering-team-*",
+  ]
+  
+  organization_subjects = [
+    for org in var.organization_names : "organization:${org}:*"
+  ]
 }
 
 data "aws_iam_openid_connect_provider" "stacks" {
@@ -15,7 +23,7 @@ data "aws_iam_openid_connect_provider" "stacks" {
 #}
 
 # This role is assumed by Terraform Cloud dynamic credentials, accepting any
-# stack that matches the subject string in local.development_stack_subjects.
+# stack that matches the subject string from multiple organizations and audiences.
 resource "aws_iam_role" "stacks" {
   name = var.role_name
   assume_role_policy = jsonencode({
@@ -29,10 +37,10 @@ resource "aws_iam_role" "stacks" {
         },
         "Condition" : {
           "StringEquals" : {
-            "app.terraform.io:aud" : local.jwt_audience,
+            "app.terraform.io:aud" : local.jwt_audiences,
           },
           "StringLike" : {
-            "app.terraform.io:sub" : local.development_stack_subjects,
+            "app.terraform.io:sub" : local.organization_subjects,
           },
         },
       },
@@ -66,5 +74,21 @@ resource "aws_iam_role_policy" "stacks" {
 
 # Emit the role ARN, for use in the stack configuration.
 output "role_arn" {
-  value = aws_iam_role.stacks.arn
+  description = "ARN of the IAM role for Terraform Stacks"
+  value       = aws_iam_role.stacks.arn
+}
+
+output "openid_provider_arn" {
+  description = "ARN of the OpenID Connect provider"
+  value       = data.aws_iam_openid_connect_provider.stacks.arn
+}
+
+output "supported_audiences" {
+  description = "List of supported JWT audiences"
+  value       = local.jwt_audiences
+}
+
+output "supported_organizations" {
+  description = "List of organization subjects that can assume this role"
+  value       = local.organization_subjects
 }
