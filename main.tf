@@ -1,6 +1,14 @@
 locals {
-  development_stack_subjects = [for org in var.organization_names : "organization:${org}:*"]
-  jwt_audience               = "terraform-stacks-private-preview"
+  jwt_audiences = [
+    "aws.workload.identity",
+    "terraform-stacks-private-preview",
+    "platform.onboarding",
+    "engineering-team-*",
+  ]
+  
+  organization_subjects = [
+    for org in var.organization_names : "organization:${org}:*"
+  ]
 }
 
 data "aws_iam_openid_connect_provider" "stacks" {
@@ -29,10 +37,10 @@ resource "aws_iam_role" "stacks" {
         },
         "Condition" : {
           "StringEquals" : {
-            "app.terraform.io:aud" : local.jwt_audience,
+            "app.terraform.io:aud" : local.jwt_audiences,
           },
           "StringLike" : {
-            "app.terraform.io:sub" : local.development_stack_subjects,
+            "app.terraform.io:sub" : local.organization_subjects,
           },
         },
       },
